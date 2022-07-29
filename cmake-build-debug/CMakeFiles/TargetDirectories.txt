@@ -1,0 +1,3 @@
+/home/dml/CLionProjects/EDGE_server/cmake-build-debug/CMakeFiles/EDGE_server.dir
+/home/dml/CLionProjects/EDGE_server/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/dml/CLionProjects/EDGE_server/cmake-build-debug/CMakeFiles/rebuild_cache.dir
