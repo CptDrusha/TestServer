@@ -1,0 +1,1 @@
+/usr/bin/c++   -O0   CMakeFiles/EDGEServer.dir/main.cpp.o  -o EDGEServer 

@@ -1,7 +1,7 @@
 #include <enet/enet.h>
 
 #include "Networking/ENet_Common.h"
-#include "../Server/ENetServer.h"
+#include "Server/ENetServer.h"
 
 #pragma comment (lib, "winmm.lib")
 #pragma comment (lib, "ws2_32.lib")

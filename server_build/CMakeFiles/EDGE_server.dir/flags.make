@@ -6,5 +6,5 @@ CXX_FLAGS =  -O0   -pthread -std=gnu++14
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/usr/local/include/enet-1.3.17/include -I/usr/local -I/home/dml/CLionProjects/EDGE_server/Server -I/home/dml/CLionProjects/EDGE_server/Networking 
+CXX_INCLUDES = -I/home/dml/CLionProjects/EDGE_server/include/enet-1.3.17/include -I/usr/local -I/home/dml/CLionProjects/EDGE_server/Server -I/home/dml/CLionProjects/EDGE_server/Networking 
 

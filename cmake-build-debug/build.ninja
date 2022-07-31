@@ -52,35 +52,35 @@ build cmake_object_order_depends_target_EDGE_server: phony || CMakeFiles/EDGE_se
 build CMakeFiles/EDGE_server.dir/Serial/Serialization.cpp.o: CXX_COMPILER__EDGE_server_Debug /home/dml/CLionProjects/EDGE_server/Serial/Serialization.cpp || cmake_object_order_depends_target_EDGE_server
   DEP_FILE = CMakeFiles/EDGE_server.dir/Serial/Serialization.cpp.o.d
   FLAGS = -O0 -g -pthread -std=gnu++14
-  INCLUDES = -I/usr/local/include/enet-1.3.17/include -I/usr/local -I/home/dml/CLionProjects/EDGE_server/Server -I/home/dml/CLionProjects/EDGE_server/Networking
+  INCLUDES = -I/home/dml/CLionProjects/EDGE_server/include/enet-1.3.17/include -I/usr/local -I/home/dml/CLionProjects/EDGE_server/Server -I/home/dml/CLionProjects/EDGE_server/Networking
   OBJECT_DIR = CMakeFiles/EDGE_server.dir
   OBJECT_FILE_DIR = CMakeFiles/EDGE_server.dir/Serial
 
 build CMakeFiles/EDGE_server.dir/Json/json11.cpp.o: CXX_COMPILER__EDGE_server_Debug /home/dml/CLionProjects/EDGE_server/Json/json11.cpp || cmake_object_order_depends_target_EDGE_server
   DEP_FILE = CMakeFiles/EDGE_server.dir/Json/json11.cpp.o.d
   FLAGS = -O0 -g -pthread -std=gnu++14
-  INCLUDES = -I/usr/local/include/enet-1.3.17/include -I/usr/local -I/home/dml/CLionProjects/EDGE_server/Server -I/home/dml/CLionProjects/EDGE_server/Networking
+  INCLUDES = -I/home/dml/CLionProjects/EDGE_server/include/enet-1.3.17/include -I/usr/local -I/home/dml/CLionProjects/EDGE_server/Server -I/home/dml/CLionProjects/EDGE_server/Networking
   OBJECT_DIR = CMakeFiles/EDGE_server.dir
   OBJECT_FILE_DIR = CMakeFiles/EDGE_server.dir/Json
 
 build CMakeFiles/EDGE_server.dir/Db/DbConnector.cpp.o: CXX_COMPILER__EDGE_server_Debug /home/dml/CLionProjects/EDGE_server/Db/DbConnector.cpp || cmake_object_order_depends_target_EDGE_server
   DEP_FILE = CMakeFiles/EDGE_server.dir/Db/DbConnector.cpp.o.d
   FLAGS = -O0 -g -pthread -std=gnu++14
-  INCLUDES = -I/usr/local/include/enet-1.3.17/include -I/usr/local -I/home/dml/CLionProjects/EDGE_server/Server -I/home/dml/CLionProjects/EDGE_server/Networking
+  INCLUDES = -I/home/dml/CLionProjects/EDGE_server/include/enet-1.3.17/include -I/usr/local -I/home/dml/CLionProjects/EDGE_server/Server -I/home/dml/CLionProjects/EDGE_server/Networking
   OBJECT_DIR = CMakeFiles/EDGE_server.dir
   OBJECT_FILE_DIR = CMakeFiles/EDGE_server.dir/Db
 
 build CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: CXX_COMPILER__EDGE_server_Debug /home/dml/CLionProjects/EDGE_server/Server/ENetServer.cpp || cmake_object_order_depends_target_EDGE_server
   DEP_FILE = CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o.d
   FLAGS = -O0 -g -pthread -std=gnu++14
-  INCLUDES = -I/usr/local/include/enet-1.3.17/include -I/usr/local -I/home/dml/CLionProjects/EDGE_server/Server -I/home/dml/CLionProjects/EDGE_server/Networking
+  INCLUDES = -I/home/dml/CLionProjects/EDGE_server/include/enet-1.3.17/include -I/usr/local -I/home/dml/CLionProjects/EDGE_server/Server -I/home/dml/CLionProjects/EDGE_server/Networking
   OBJECT_DIR = CMakeFiles/EDGE_server.dir
   OBJECT_FILE_DIR = CMakeFiles/EDGE_server.dir/Server
 
 build CMakeFiles/EDGE_server.dir/main.cpp.o: CXX_COMPILER__EDGE_server_Debug /home/dml/CLionProjects/EDGE_server/main.cpp || cmake_object_order_depends_target_EDGE_server
   DEP_FILE = CMakeFiles/EDGE_server.dir/main.cpp.o.d
   FLAGS = -O0 -g -pthread -std=gnu++14
-  INCLUDES = -I/usr/local/include/enet-1.3.17/include -I/usr/local -I/home/dml/CLionProjects/EDGE_server/Server -I/home/dml/CLionProjects/EDGE_server/Networking
+  INCLUDES = -I/home/dml/CLionProjects/EDGE_server/include/enet-1.3.17/include -I/usr/local -I/home/dml/CLionProjects/EDGE_server/Server -I/home/dml/CLionProjects/EDGE_server/Networking
   OBJECT_DIR = CMakeFiles/EDGE_server.dir
   OBJECT_FILE_DIR = CMakeFiles/EDGE_server.dir
 

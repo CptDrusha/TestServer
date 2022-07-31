@@ -1639,37 +1639,72 @@ void ENetServer::OnMessage(ENetEvent event) {
                 ProductsInContainer productInContainer;
                 if(dbConnector->GetProductInContainerByPIID(transfer.PIID, productInContainer))
                 {
-                    result = dbConnector->TransferProduct(transfer.PIID,
-                                                               transfer.CIID,
-                                                               transfer.deltaMass);
-
-                    std::vector<ProductsInContainer> products;
-                    if(dbConnector->GetProductsInContainerById(productInContainer.CIID, products))
+                    ProductInstance instance;
+                    if (dbConnector->GetInstanceById(transfer.PIID, instance))
                     {
-                        std::string jsonString = json11::Json(products).dump();
-
-                        MsgBroadcast.clearData();
-                        MsgBroadcast.type = MessageTypes::ContainerChangedBroadcast;
-
-                        MsgBroadcast.package << jsonString;
-                        MsgBroadcast.package << productInContainer.CIID;
-
-                        SendBroadcast(server, MsgBroadcast);
-
-                        products.clear();
-                        if(dbConnector->GetProductsInContainerById(transfer.CIID, products))
+                        float pMass;
+                        if (dbConnector->CheckTransferPossible(instance, transfer.CIID, transfer.deltaMass, pMass))
                         {
-                            jsonString = json11::Json(products).dump();
+                            bool bFullRemove = (pMass == instance.mass);
+                            // Update transfer.deltaMass with partialMass so product will be transferred partially
+                            transfer.deltaMass = pMass;
+                            result = dbConnector->TransferProduct(transfer.PIID,
+                                                                  transfer.CIID,
+                                                                  transfer.deltaMass);
 
-                            MsgBroadcast.clearData();
-                            MsgBroadcast.type = MessageTypes::ContainerChangedBroadcast;
+                            // Check source container is workbench
+                            int WBID;
+                            if (dbConnector->ContainerIsWorkbench(productInContainer.CIID, WBID))
+                            {
+                                int WBSID;
+                                bool bSkip;
+                                if (dbConnector->CheckBreakOnRemoval(productInContainer.PIID, bFullRemove, WBID, productInContainer.CIID, WBSID, bSkip))
+                                {
+                                    ConversionInfo Info(WBID, 0, WBSID);
+                                    StopConversion(Info, bSkip);
+                                }
+                            }
 
-                            MsgBroadcast.package << jsonString;
-                            MsgBroadcast.package << transfer.CIID;
+                            // Check target container is workbench
+                            if (dbConnector->ContainerIsWorkbench(transfer.CIID, WBID))
+                            {
+                                if (dbConnector->CheckBreakOnAdded(transfer.PIID, WBID, transfer.CIID))
+                                {
+                                    ConversionInfo Info(WBID, 0, 0);
+                                    StopConversion(Info);
+                                }
+                            }
 
-                            SendBroadcast(server, MsgBroadcast);
+                            std::vector<ProductsInContainer> products;
+                            if(dbConnector->GetProductsInContainerById(productInContainer.CIID, products))
+                            {
+                                std::string jsonString = json11::Json(products).dump();
+
+                                MsgBroadcast.clearData();
+                                MsgBroadcast.type = MessageTypes::ContainerChangedBroadcast;
+
+                                MsgBroadcast.package << jsonString;
+                                MsgBroadcast.package << productInContainer.CIID;
+
+                                SendBroadcast(server, MsgBroadcast);
+
+                                products.clear();
+                                if(dbConnector->GetProductsInContainerById(transfer.CIID, products))
+                                {
+                                    jsonString = json11::Json(products).dump();
+
+                                    MsgBroadcast.clearData();
+                                    MsgBroadcast.type = MessageTypes::ContainerChangedBroadcast;
+
+                                    MsgBroadcast.package << jsonString;
+                                    MsgBroadcast.package << transfer.CIID;
+
+                                    SendBroadcast(server, MsgBroadcast);
+                                }
+                            }
                         }
                     }
+
                 }
 
                 msg.clearData();
@@ -1700,7 +1735,20 @@ void ENetServer::OnMessage(ENetEvent event) {
                 if(dbConnector->GetProductInContainerByPIID(productInCharacter.PIID, productInContainer))
                 {
                     result = dbConnector->TransferProductContainerToHand(productInCharacter.PIID,
-                                                                              productInCharacter.CharacterID);
+                                                                         productInCharacter.CharacterID);
+
+                    // Check source container is workbench
+                    int WBID;
+                    if (dbConnector->ContainerIsWorkbench(productInContainer.CIID, WBID))
+                    {
+                        int WBSID;
+                        bool bSkip;
+                        if (dbConnector->CheckBreakOnRemoval(productInContainer.PIID, true, WBID, productInContainer.CIID, WBSID, bSkip))
+                        {
+                            ConversionInfo Info(WBID, 0, WBSID);
+                            StopConversion(Info, bSkip);
+                        }
+                    }
 
                     std::vector<ProductsInContainer> products;
                     if(dbConnector->GetProductsInContainerById(productInContainer.CIID, products)) {
@@ -1714,6 +1762,7 @@ void ENetServer::OnMessage(ENetEvent event) {
 
                         SendBroadcast(server, MsgBroadcast);
                     }
+
                 }
 
                 msg.clearData();
@@ -1738,26 +1787,45 @@ void ENetServer::OnMessage(ENetEvent event) {
             {
                 productInContainer = ProductsInContainer(JSON);
 
-                bool result = dbConnector->TransferProductHandToContainer(productInContainer.PIID,
-                                                                          productInContainer.CIID);
+                ProductInstance instance;
+                if (dbConnector->GetInstanceById(productInContainer.PIID, instance))
+                {
+                    float pMass;
+                    if (dbConnector->CheckTransferPossible(instance, productInContainer.CIID, 0.f, pMass))
+                    {
+                        bool result = dbConnector->TransferProductHandToContainer(productInContainer.PIID,
+                                                                                  productInContainer.CIID);
 
-                std::vector<ProductsInContainer> products;
-                if(dbConnector->GetProductsInContainerById(productInContainer.CIID, products)) {
-                    std::string jsonString = json11::Json(products).dump();
+                        // Check target container is workbench
+                        int WBID;
+                        if (dbConnector->ContainerIsWorkbench(productInContainer.CIID, WBID))
+                        {
+                            if (dbConnector->CheckBreakOnAdded(productInContainer.PIID, WBID, productInContainer.CIID))
+                            {
+                                ConversionInfo Info(WBID, 0, 0);
+                                StopConversion(Info);
+                            }
+                        }
 
-                    MsgBroadcast.clearData();
-                    MsgBroadcast.type = MessageTypes::ContainerChangedBroadcast;
+                        std::vector<ProductsInContainer> products;
+                        if(dbConnector->GetProductsInContainerById(productInContainer.CIID, products)) {
+                            std::string jsonString = json11::Json(products).dump();
 
-                    MsgBroadcast.package << jsonString;
-                    MsgBroadcast.package << productInContainer.CIID;
+                            MsgBroadcast.clearData();
+                            MsgBroadcast.type = MessageTypes::ContainerChangedBroadcast;
 
-                    SendBroadcast(server, MsgBroadcast);
+                            MsgBroadcast.package << jsonString;
+                            MsgBroadcast.package << productInContainer.CIID;
+
+                            SendBroadcast(server, MsgBroadcast);
+                        }
+
+                        msg.clearData();
+                        msg.package << result;
+
+                        SendMessage(event.peer, msg);
+                    }
                 }
-
-                msg.clearData();
-                msg.package << result;
-
-                SendMessage(event.peer, msg);
             }
 
             break;
@@ -1775,11 +1843,23 @@ void ENetServer::OnMessage(ENetEvent event) {
             if(!parseError.empty() || JSON.is_null() || !JSON.is_object())
             {
                 transfer = TransferContainerToSpaceActor(JSON);
-
                 bool result;
+                ProductsInContainer productInContainer;
+                if(dbConnector->GetProductInContainerByPIID(transfer.actor.PIID, productInContainer)) {
+                    // Check source container is workbench
+                    int WBID;
+                    if (dbConnector->ContainerIsWorkbench(productInContainer.CIID, WBID)) {
+                        int WBSID;
+                        bool bSkip;
+                        if (dbConnector->CheckBreakOnRemoval(productInContainer.PIID, true, WBID,
+                                                             productInContainer.CIID, WBSID, bSkip)) {
+                            ConversionInfo Info(WBID, 0, WBSID);
+                            StopConversion(Info, bSkip);
+                        }
+                    }
+                }
 
                 result = dbConnector->TransferProductContainerToSpaceActor(transfer.actor);
-
                 MsgBroadcast.clearData();
                 MsgBroadcast.type = MessageTypes::CreateProductActorToScene;
                 std::string jsonString = json11::Json(transfer.actor).dump();
@@ -1788,23 +1868,18 @@ void ENetServer::OnMessage(ENetEvent event) {
 
                 if(result)
                     SendBroadcast(server, MsgBroadcast);
-
-                ProductsInContainer productInContainer;
-                if(dbConnector->GetProductInContainerByPIID(transfer.actor.PIID, productInContainer))
-                {
+                if (productInContainer.PIID != -1) {
                     std::vector<ProductsInContainer> products;
-                    if(dbConnector->GetProductsInContainerById(productInContainer.CIID, products)) {
+                    if (dbConnector->GetProductsInContainerById(productInContainer.CIID, products)) {
                         jsonString = json11::Json(products).dump();
-
                         MsgBroadcast.clearData();
                         MsgBroadcast.type = MessageTypes::ContainerChangedBroadcast;
-
                         MsgBroadcast.package << jsonString;
                         MsgBroadcast.package << productInContainer.CIID;
-
                         SendBroadcast(server, MsgBroadcast);
                     }
                 }
+
 
                 msg.clearData();
                 msg.package << result;
@@ -2502,34 +2577,7 @@ void ENetServer::OnMessage(ENetEvent event) {
             {
                 Info = ConversionInfo(JSON);
 
-                std::cout << localtime->tm_hour << ":" << localtime->tm_min << ":" << localtime->tm_sec
-                          << ": [SERVER] Stop conversion process...\n";
-
-                bool found = false;
-                for(int i = 0; i < ConversionInfoList.size(); i++)
-                {
-                    if(ConversionInfoList[i] == Info)
-                    {
-                        ConversionInfoList.erase(ConversionInfoList.begin() + i);
-                        TimeList.erase(TimeList.begin() + i);
-
-                        found = true;
-                        break;
-                    }
-                }
-
-                if(found)
-                {
-                    std::string jsonString = json11::Json(Info).dump();
-
-                    MsgBroadcast.clearData();
-                    MsgBroadcast.package << jsonString;
-                    MsgBroadcast.package << -1;
-
-                    MsgBroadcast.type = MessageTypes::BreakingConversionProcessBroadcast;
-
-                    SendBroadcast(server, MsgBroadcast);
-                }
+                StopConversion(Info);
             }
 
             break;
@@ -2607,4 +2655,39 @@ void ENetServer::Update() {
     }
 
     server_interface::Update();
+}
+
+void ENetServer::StopConversion(ConversionInfo Info, bool bSkipSearch) {
+    auto now = std::chrono::system_clock::now();
+    std::time_t time = std::chrono::system_clock::to_time_t(now);
+    tm* localtime = std::localtime(&time);
+
+    std::cout << localtime->tm_hour << ":" << localtime->tm_min << ":" << localtime->tm_sec
+              << ": [SERVER] Stop conversion process...\n";
+
+    bool found = false;
+    if (!bSkipSearch) {
+        for (int i = 0; i < ConversionInfoList.size(); i++) {
+            if (ConversionInfoList[i].IsSameSlot(Info.WBID, Info.WBSID)) {
+                ConversionInfoList.erase(ConversionInfoList.begin() + i);
+                TimeList.erase(TimeList.begin() + i);
+
+                found = true;
+                break;
+            }
+        }
+    }
+
+    if(found || bSkipSearch)
+    {
+        std::string jsonString = json11::Json(Info).dump();
+
+        MsgBroadcast.clearData();
+        MsgBroadcast.package << jsonString;
+        MsgBroadcast.package << -1;
+
+        MsgBroadcast.type = MessageTypes::BreakingConversionProcessBroadcast;
+
+        SendBroadcast(server, MsgBroadcast);
+    }
 }

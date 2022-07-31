@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories(/usr/local/include/enet-1.3.17/include)
+include_directories(include/enet-1.3.17/include)
 include_directories(/usr/local)
 include_directories(Server)
 include_directories(Networking)

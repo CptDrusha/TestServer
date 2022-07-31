@@ -51,6 +51,13 @@ CMakeFiles/EDGE_server.dir/Json/json11.cpp.o: ../Json/json11.hpp
 CMakeFiles/EDGE_server.dir/Serial/Serialization.cpp.o: ../Serial/Serialization.cpp
 CMakeFiles/EDGE_server.dir/Serial/Serialization.cpp.o: ../Serial/Serialization.h
 
+CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../include/enet-1.3.17/include/enet/callbacks.h
+CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../include/enet-1.3.17/include/enet/enet.h
+CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../include/enet-1.3.17/include/enet/list.h
+CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../include/enet-1.3.17/include/enet/protocol.h
+CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../include/enet-1.3.17/include/enet/types.h
+CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../include/enet-1.3.17/include/enet/unix.h
+CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../include/enet-1.3.17/include/enet/win32.h
 CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../Db/DbCommon.h
 CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../Db/DbConnector.h
 CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../Json/json11.hpp
@@ -99,14 +106,14 @@ CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../Serial/Serialization.h
 CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../Serial/Timer.h
 CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../Server/ENetServer.cpp
 CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: ../Server/ENetServer.h
-CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: /usr/local/include/enet-1.3.17/include/enet/callbacks.h
-CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: /usr/local/include/enet-1.3.17/include/enet/enet.h
-CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: /usr/local/include/enet-1.3.17/include/enet/list.h
-CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: /usr/local/include/enet-1.3.17/include/enet/protocol.h
-CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: /usr/local/include/enet-1.3.17/include/enet/types.h
-CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: /usr/local/include/enet-1.3.17/include/enet/unix.h
-CMakeFiles/EDGE_server.dir/Server/ENetServer.cpp.o: /usr/local/include/enet-1.3.17/include/enet/win32.h
 
+CMakeFiles/EDGE_server.dir/main.cpp.o: ../include/enet-1.3.17/include/enet/callbacks.h
+CMakeFiles/EDGE_server.dir/main.cpp.o: ../include/enet-1.3.17/include/enet/enet.h
+CMakeFiles/EDGE_server.dir/main.cpp.o: ../include/enet-1.3.17/include/enet/list.h
+CMakeFiles/EDGE_server.dir/main.cpp.o: ../include/enet-1.3.17/include/enet/protocol.h
+CMakeFiles/EDGE_server.dir/main.cpp.o: ../include/enet-1.3.17/include/enet/types.h
+CMakeFiles/EDGE_server.dir/main.cpp.o: ../include/enet-1.3.17/include/enet/unix.h
+CMakeFiles/EDGE_server.dir/main.cpp.o: ../include/enet-1.3.17/include/enet/win32.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Db/DbCommon.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Db/DbConnector.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Json/json11.hpp
@@ -129,6 +136,7 @@ CMakeFiles/EDGE_server.dir/main.cpp.o: ../Models/GraphicsSet.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Models/GraphicsSetsActors.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Models/GraphicsSetsProduct.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Models/InteractiveObjectComponent.h
+CMakeFiles/EDGE_server.dir/main.cpp.o: ../Models/MessageTypes.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Models/ModelsCommon.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Models/PlayerInventory.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Models/PlayerMovement.h
@@ -150,16 +158,7 @@ CMakeFiles/EDGE_server.dir/main.cpp.o: ../Models/WorkbenchComponentSlot.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Models/WorkbenchInstance.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Models/WorkbenchScheme.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Networking/ENet_Common.h
-CMakeFiles/EDGE_server.dir/main.cpp.o: ../Server/ENetServer.h
-CMakeFiles/EDGE_server.dir/main.cpp.o: ../Models/MessageTypes.h
-CMakeFiles/EDGE_server.dir/main.cpp.o: ../Networking/ENet_Common.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../Serial/Serialization.h
+CMakeFiles/EDGE_server.dir/main.cpp.o: ../Server/ENetServer.h
 CMakeFiles/EDGE_server.dir/main.cpp.o: ../main.cpp
-CMakeFiles/EDGE_server.dir/main.cpp.o: /usr/local/include/enet-1.3.17/include/enet/callbacks.h
-CMakeFiles/EDGE_server.dir/main.cpp.o: /usr/local/include/enet-1.3.17/include/enet/enet.h
-CMakeFiles/EDGE_server.dir/main.cpp.o: /usr/local/include/enet-1.3.17/include/enet/list.h
-CMakeFiles/EDGE_server.dir/main.cpp.o: /usr/local/include/enet-1.3.17/include/enet/protocol.h
-CMakeFiles/EDGE_server.dir/main.cpp.o: /usr/local/include/enet-1.3.17/include/enet/types.h
-CMakeFiles/EDGE_server.dir/main.cpp.o: /usr/local/include/enet-1.3.17/include/enet/unix.h
-CMakeFiles/EDGE_server.dir/main.cpp.o: /usr/local/include/enet-1.3.17/include/enet/win32.h
 

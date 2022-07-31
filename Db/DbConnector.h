@@ -158,12 +158,6 @@ public:
     bool GetAllWorkbenchComponentsInWorkbenchArchetype(std::vector<WorkbenchComponentInWorkbenchArchetype>& components);
     bool GetWorkbenchComponentInWorkbenchArchetypeByID(uint32_t id, WorkbenchComponentInWorkbenchArchetype& component);
 
-    // Conversion
-    /** PIID : {WBID, WBSID} */
-    std::map<int, std::vector<int>> LockPIIDs;
-    bool CheckConversionProcess(ConversionInfo info);
-    bool StartConversionProcess(ConversionInfo info);
-
     // Methods for working with Containers table
         // ContainersInActors
     bool GetAllContainersInActors(std::vector<ContainersInActor>& containersInActors);
@@ -240,6 +234,61 @@ public:
 
     int RegistrationClient(std::string userName, uint64_t hashedPassword);
 
+    // Workbench and schemes
+
+    enum WorkbenchSlotStatus {
+        Ready,
+        Process,
+        Finish
+    };
+
+    struct WorkbenchSlotInfo {
+        WorkbenchSlotInfo() {};
+
+        WorkbenchSlotInfo(int _WBSID, WorkbenchSlotStatus _status, std::list<int> _PIIDs)
+            : WBSID(_WBSID), status(_status), PIIDs(_PIIDs) {};
+
+        int WBSID = 0;
+        WorkbenchSlotStatus status = Ready;
+        std::list<int> PIIDs = {};
+
+        void Reset() {
+            status = Ready;
+            PIIDs.clear();
+        }
+
+        bool HasPIID(int PIID) {
+            for (auto& elem : PIIDs) {
+                if (elem == PIID)
+                    return true;
+            }
+            return false;
+        }
+
+        bool HasPIID(int PIID, std::list<int>::iterator& iterator) {
+            for (iterator = PIIDs.begin(); iterator != PIIDs.end(); iterator++) {
+                if (*iterator == PIID)
+                    return true;
+            }
+            return false;
+        }
+    };
+
+    /** WBID : SlotInfo */
+    std::map<int, std::list<WorkbenchSlotInfo>> WorkbenchSlotInfoMap;
+    /** PIID : {WBID, WBSID} */
+    //std::map<int, std::vector<int>> LockPIIDs;
+    /** PIID : {WBID, WBSID} || Products that was created as a conversion result. */
+    //std::map<int, std::vector<int>> CompletedPIIDs;
+    bool CheckConversionProcess(ConversionInfo info);
+    bool StartConversionProcess(ConversionInfo info);
+
+    bool ContainerIsWorkbench(int CIID, int& WBID);
+    /** @param bFullRemove Flag that all product was removed, not just part of it
+     * @param WBSID Return valid value if function returned TRUE. */
+    bool CheckBreakOnRemoval(int PIID, bool bFullRemove, int WBID, int CIID, int& WBSID, bool& bIsCompleted);
+    bool CheckBreakOnAdded(int PIID, int WBID, int CIID);
+
 private:
         // BodyType
     int AddCharacterBodyType(CharacterBodyType& BodyType);
@@ -304,6 +353,7 @@ private:
     int FindCharacter(Character& character);
 
     int FindProductInCharacter(ProductInCharacter& productInCharacter);
+
 
     void GenerateSpaceAreas(int Xpos, int Ypos, float Height, float Width, float Length);
 

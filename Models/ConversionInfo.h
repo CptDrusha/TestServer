@@ -40,6 +40,11 @@ struct ConversionInfo
         return (WBID == info.WBID && SchemeID == info.SchemeID && WBSID == info.WBSID);
     }
 
+    bool IsSameSlot(int _WBID, int _WBSID) const
+    {
+        return (WBID == _WBID && WBSID == _WBSID);
+    }
+
     int WBID;
     int SchemeID;
     int WBSID;

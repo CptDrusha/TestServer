@@ -1853,6 +1853,19 @@ bool DbConnector::GetWorkbenchComponentInWorkbenchArchetypeByID(uint32_t id,
 
 
 bool DbConnector::CheckConversionProcess(ConversionInfo info) {
+    std::map<int, std::list<WorkbenchSlotInfo>>::iterator status_it;
+    std::list<WorkbenchSlotInfo>::iterator slot_it;
+    status_it = WorkbenchSlotInfoMap.find(info.WBID);
+    if (status_it != WorkbenchSlotInfoMap.end()) {
+        for (slot_it = status_it->second.begin(); slot_it != status_it->second.end(); slot_it++) {
+            if (slot_it->WBSID == info.WBSID) {
+                if (slot_it->status != Ready)       // This will prevent checks if we get multiple calls with same info
+                    return false;
+                break;
+            }
+        }
+    }
+
     std::vector<ConversionSourcesWorkbenchScheme> sources;
     GetConversionSourcesWorkbenchSchemesBySchemeID(info.SchemeID, sources);
 
@@ -1935,7 +1948,7 @@ bool DbConnector::CheckConversionProcess(ConversionInfo info) {
     float totalInputMass = 0.f;
     bool bDataIsGood = false;
 
-    std::map<int, std::vector<int>> localLockPIIDs;
+    std::list<int> localLockPIIDs;
 
     for(auto& container : InputContainers)
     {
@@ -1947,11 +1960,25 @@ bool DbConnector::CheckConversionProcess(ConversionInfo info) {
             {
                 bDataIsGood = false;
 
-                if(LockPIIDs.find(product.PIID) != LockPIIDs.end())
-                {
-                    bDataIsGood = true;
-                    continue;
+                for (auto& elem : localLockPIIDs) {
+                    if (product.PIID == elem) {
+                        bDataIsGood = true;
+                        break;
+                    }
                 }
+                if (bDataIsGood)
+                    continue;
+
+                if (status_it != WorkbenchSlotInfoMap.end()) {
+                    for (auto& slot : status_it->second) {
+                        if (slot.HasPIID(product.PIID)) {
+                            bDataIsGood = true;
+                            break;
+                        }
+                    }
+                }
+                if (bDataIsGood)
+                    continue;
 
                 ProductInstance instance;
                 if(GetInstanceById(product.PIID, instance))
@@ -1959,7 +1986,7 @@ bool DbConnector::CheckConversionProcess(ConversionInfo info) {
                     if(Find(SavedPAIDs, instance.PAID))
                     {
                         bDataIsGood = true;
-                        localLockPIIDs.emplace(instance.PIID, std::vector<int>{info.WBID, info.WBSID});
+                        localLockPIIDs.push_back(instance.PIID);
                         totalInputMass += instance.mass;
                         source_it = sourceMap.find(instance.PAID);
                         if(source_it != sourceMap.end())
@@ -1988,7 +2015,7 @@ bool DbConnector::CheckConversionProcess(ConversionInfo info) {
                             SourceKeys.erase(SourceKeys.begin() + Idx);
                             SavedPAIDs.push_back(source);
 
-                            localLockPIIDs.emplace(instance.PIID, std::vector<int>{info.WBID, info.WBSID});
+                            localLockPIIDs.push_back(instance.PIID);
 
                             totalInputMass += instance.mass;
 
@@ -2192,11 +2219,42 @@ bool DbConnector::CheckConversionProcess(ConversionInfo info) {
         }
     }
 
-    LockPIIDs.insert(localLockPIIDs.begin(), localLockPIIDs.end());
+    if (status_it != WorkbenchSlotInfoMap.end()) {
+        if (slot_it != status_it->second.end()) {
+            // This actually never should happen
+            slot_it->PIIDs = localLockPIIDs;
+            slot_it->status = Process;
+            std::cout << "WARNING: found slot " << info.WBID << ":" << info.WBSID
+                      << " with status Ready. That should not happen.";
+        } else {
+            WorkbenchSlotInfo newInfo(info.WBSID, Process, localLockPIIDs);
+            status_it->second.push_back(newInfo);
+        }
+    } else {
+        WorkbenchSlotInfo newInfo(info.WBSID, Process, localLockPIIDs);
+        WorkbenchSlotInfoMap.emplace(info.WBID, std::list<WorkbenchSlotInfo>{newInfo});
+    }
+
     return true;
 }
 
 bool DbConnector::StartConversionProcess(ConversionInfo info) {
+    std::map<int, std::list<WorkbenchSlotInfo>>::iterator status_it;
+    std::list<WorkbenchSlotInfo>::iterator slot_it;
+    status_it = WorkbenchSlotInfoMap.find(info.WBID);
+    if (status_it == WorkbenchSlotInfoMap.end())
+        return false;
+
+    for (slot_it = status_it->second.begin(); slot_it != status_it->second.end(); slot_it++) {
+        if (slot_it->WBSID == info.WBSID) {
+            if (slot_it->status != Process)
+                return false;
+            break;
+        }
+    }
+    if (slot_it == status_it->second.end())
+        return false;
+
     std::vector<ConversionSourcesWorkbenchScheme> sources;
     GetConversionSourcesWorkbenchSchemesBySchemeID(info.SchemeID, sources);
 
@@ -2241,13 +2299,6 @@ bool DbConnector::StartConversionProcess(ConversionInfo info) {
         }
     }
 
-//    std::vector<int> SourceKeys;
-//
-//    for(source_it = sourceMap.begin(); source_it!=sourceMap.end(); ++source_it)
-//    {
-//        SourceKeys.push_back(source_it->first);
-//    }
-
     WorkbenchInstance workbenchInstance;
     if(!GetWorkbenchInstanceByID(info.WBID, workbenchInstance))
     {
@@ -2275,14 +2326,6 @@ bool DbConnector::StartConversionProcess(ConversionInfo info) {
                 if(containerInfo.Type != ContainerType::Output)
                     InputContainers.push_back(container);
             }
-        }
-    }
-
-    std::vector<int> PIIDsToConsume;
-    for (auto& Data : LockPIIDs){
-        if (Data.second[0] == info.WBID && Data.second[1] == info.WBSID)
-        {
-            PIIDsToConsume.push_back(Data.first);
         }
     }
 
@@ -2329,7 +2372,7 @@ bool DbConnector::StartConversionProcess(ConversionInfo info) {
 
     // Add mass
     float totalConsumedMass = 0.f;
-    for (auto& PIID : PIIDsToConsume)
+    for (auto& PIID : slot_it->PIIDs)
     {
         ProductInstance sourceItem;
         if (!GetInstanceById(PIID, sourceItem))
@@ -2379,7 +2422,7 @@ bool DbConnector::StartConversionProcess(ConversionInfo info) {
             float massPAID = 0.f;
             float qualPAID = 0.f;
             int qualCount = 0;
-            for (auto& src : PIIDsToConsume)
+            for (auto& src : slot_it->PIIDs)
             {
                 ProductInstance inst;
                 if (!GetInstanceById(src, inst))
@@ -2428,8 +2471,10 @@ bool DbConnector::StartConversionProcess(ConversionInfo info) {
         recoveryData.insert(recoveryData.end(), recoveryInstance.begin(), recoveryInstance.end());
     }
 
-    for (auto& PIID : PIIDsToConsume)
+    for (auto& PIID : slot_it->PIIDs)
         DeleteProductsInContainer(PIID);
+
+    std::list<int> localCompletedPIIDs;
 
     int localIdx = -1;
     for (npm_it = newProductsMap.begin(); npm_it != newProductsMap.end(); npm_it++)
@@ -2459,7 +2504,7 @@ bool DbConnector::StartConversionProcess(ConversionInfo info) {
                                std::to_string(localIdx) + " by conversion process at Workbench " +
                                std::to_string(info.WBID) + ":" +
                                std::to_string(info.WBSID) + " from " +
-                               std::to_string(PIIDsToConsume[0]);
+                               std::to_string(*(slot_it->PIIDs.begin()));
 
             PresenceType prType = PresenceType::Container;
 
@@ -2498,6 +2543,8 @@ bool DbConnector::StartConversionProcess(ConversionInfo info) {
                 }
             }
 
+            localCompletedPIIDs.push_back(newInstance.PIID);
+
             break;
         }
 
@@ -2514,11 +2561,13 @@ bool DbConnector::StartConversionProcess(ConversionInfo info) {
         return false;
     }
 
-    for (auto& PIID : PIIDsToConsume)
+    for (auto& PIID : slot_it->PIIDs)
     {
         DeleteInstance(PIID);
-        LockPIIDs.erase(PIID);
     }
+
+    slot_it->status = Finish;
+    slot_it->PIIDs = localCompletedPIIDs;
 
     return true;
 }
@@ -5593,6 +5642,7 @@ bool DbConnector::CheckTransferPossible(ProductInstance product, int CIID, float
         if (availableMass <= 0.f || availableVolume <= 0.f)
             return false;
 
+        partialMass = product.mass;
         return true;
     } else {
         partialMass = (deltaMass > 0.f && deltaMass <= product.mass)
@@ -5620,4 +5670,106 @@ bool DbConnector::CheckTransferPossible(ProductInstance product, int CIID, float
             }
         }
     }
+}
+
+bool DbConnector::CheckBreakOnRemoval(int PIID, bool bFullRemove, int WBID, int CIID, int& WBSID, bool& bIsCompleted) {
+    std::map<int, std::list<WorkbenchSlotInfo>>::iterator status_it;
+    status_it = WorkbenchSlotInfoMap.find(WBID);
+
+    if (status_it == WorkbenchSlotInfoMap.end()){
+        return false;
+    }
+
+    std::list<WorkbenchSlotInfo>::iterator slot_it;
+    std::list<int>::iterator piids_it;
+    for (slot_it = status_it->second.begin(); slot_it != status_it->second.end(); slot_it++) {
+        if (slot_it->HasPIID(PIID, piids_it)) {
+            WBSID = slot_it->WBSID;
+            switch (slot_it->status) {
+                case Ready:
+                    std::cout << "ERROR: Product " << PIID << " marked in workbench " << WBID
+                              << ":" << WBSID << " while slot is in Ready state!";
+                    return false;
+                case Process:
+                    bIsCompleted = false;
+                    status_it->second.erase(slot_it);
+                    if (status_it->second.empty())
+                        WorkbenchSlotInfoMap.erase(status_it);
+                    return true;
+                case Finish:
+                    if (bFullRemove) {
+                        slot_it->PIIDs.erase(piids_it);
+                        if (slot_it->PIIDs.empty()) {
+                            bIsCompleted = true;
+                            status_it->second.erase(slot_it);
+                            if (status_it->second.empty())
+                                WorkbenchSlotInfoMap.erase(status_it);
+                            return true;
+                        }
+                    }
+                    return false;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool DbConnector::CheckBreakOnAdded(int PIID, int WBID, int CIID) {
+    std::map<int, std::list<WorkbenchSlotInfo>>::iterator status_it;
+    status_it = WorkbenchSlotInfoMap.find(WBID);
+
+    if (status_it == WorkbenchSlotInfoMap.end())
+        return false;
+
+    WorkbenchInstance instance;
+    if (!GetWorkbenchInstanceByID(WBID, instance))
+        return false;
+
+    WorkbenchComponentInWorkbenchArchetype wbcArch;
+    if (!GetWorkbenchComponentInWorkbenchArchetypeByID(instance.WBAID, wbcArch))
+        return false;
+
+    WorkbenchComponent workbenchComp;
+    if (!GetWorkbenchComponentByID(wbcArch.WBCID, workbenchComp))
+        return false;
+
+    // On multi-slot atm not possible to find, which slot user wanted to target, so do nothing
+    if (workbenchComp.SlotCount > 1) {
+        if (workbenchComp.AutoStart) {
+            // For multi-processing with autostart should find available slot
+        }
+        return false;
+    } else {
+        // Check for any LockPIIDs in this WBID. If any - we should break.
+        // This is valid cause only one WBSID available and won't work for multi-slot
+        switch (status_it->second.begin()->status) {
+            case Ready:
+                if (workbenchComp.AutoStart) {
+                    // Here should be auto-start
+                }
+                return false;
+            case Process:
+                // Only one slot - can safely remove full entry
+                WorkbenchSlotInfoMap.erase(status_it);
+                return true;
+            case Finish:
+                return false;
+        }
+    }
+
+    return false;
+}
+
+bool DbConnector::ContainerIsWorkbench(int CIID, int& WBID) {
+    ContainerInstance container;
+    if (GetContainerInstanceById(CIID, container)) {
+        WorkbenchInstance workbench;
+        if (GetWorkbenchInstanceByPIID(container.PIID, workbench)) {
+            WBID = workbench.WBID;
+            return true;
+        }
+    }
+
+    return false;
 }

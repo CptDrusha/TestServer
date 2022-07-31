@@ -39,6 +39,11 @@ protected:
 
     void SendBroadcast(ENetHost* peer, Msg<MessageTypes>& msg) override;
 
+    // Reusable methods
+
+    // Used for both breaking and resetting status
+    void StopConversion(ConversionInfo Info, bool bSkipSearch = false);
+
 private:
 
     std::unordered_set<MessageTypes> nonAuthorizedAvailableMessageTypes;
